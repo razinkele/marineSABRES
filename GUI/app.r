@@ -30,10 +30,18 @@ source('utils.R')
 
 ui <- dashboardPage(
   
-  header = dashboardHeader(
-    title = "marineSABRES Network Analysis", 
-    titleWidth = 300
-  ),
+
+# Updated header section for app.r
+# Replace the existing header = dashboardHeader(...) section with this:
+
+header = dashboardHeader(
+title = tags$img(
+     src = "img/logo.png",
+     height = "45px",
+     style = "padding: 2px;"
+   ),
+   titleWidth = 300
+ ),
   
   sidebar = dashboardSidebar(
     width = 300,
@@ -61,7 +69,15 @@ ui <- dashboardPage(
           text-align: center;
           padding: 20px;
         }
-      "))
+        /* Logo styling */
+        .main-header .navbar-custom-menu > .navbar-nav > li > .dropdown-menu {
+         left: auto;
+         right: 0;
+        }
+      
+      ")),
+       # Make img directory accessible to Shiny
+      tags$link(rel = "stylesheet", type = "text/css", href = "img/")
     ),
     
     tabItems(
@@ -588,7 +604,7 @@ server <- function(input, output, session) {
         updateCheckboxGroupInput(session, "indicatorNodes", choices = node_names)
         
         log_message("Data processed successfully")
-        showNotification("Data processed successfully!", type = "success")
+        showNotification("Data processed successfully!", type = "message")
         
       }, error = function(e) {
         showNotification(paste("Error processing data:", e$message), type = "error")
@@ -679,7 +695,7 @@ server <- function(input, output, session) {
         incProgress(0.8, detail = "Finalizing results...")
         
         log_message("Qualitative analysis completed")
-        showNotification("Qualitative analysis completed!", type = "success")
+        showNotification("Qualitative analysis completed!", type = "message")
         
       }, error = function(e) {
         showNotification(paste("Error in qualitative analysis:", e$message), type = "error")
@@ -791,7 +807,7 @@ server <- function(input, output, session) {
         )
         
         log_message("Quantitative analysis completed")
-        showNotification("Quantitative analysis completed!", type = "success")
+        showNotification("Quantitative analysis completed!", type = "message")
         
       }, error = function(e) {
         showNotification(paste("Error in quantitative analysis:", e$message), type = "error")
@@ -914,7 +930,7 @@ server <- function(input, output, session) {
       )
       
       log_message(paste("Intervention added:", input$measureName))
-      showNotification("Intervention added successfully!", type = "success")
+      showNotification("Intervention added successfully!", type = "message")
       
     }, error = function(e) {
       showNotification(paste("Error adding intervention:", e$message), type = "error")
@@ -985,7 +1001,7 @@ server <- function(input, output, session) {
         )
         
         log_message("Intervention analysis completed")
-        showNotification("Intervention analysis completed!", type = "success")
+        showNotification("Intervention analysis completed!", type = "message")
         
       }, error = function(e) {
         showNotification(paste("Error in intervention analysis:", e$message), type = "error")
