@@ -74,10 +74,167 @@ title = tags$img(
          left: auto;
          right: 0;
         }
+        /* Affected nodes styling */
+        .affected-node-item {
+          display: flex;
+          align-items: center;
+          margin-bottom: 8px;
+          padding: 10px;
+          border: 2px solid #e0e0e0;
+          border-radius: 8px;
+          background-color: #f8f9fa;
+          transition: all 0.3s ease;
+        }
+        .affected-node-item:hover {
+          border-color: #bdbdbd;
+          background-color: #f0f0f0;
+        }
+        .affected-node-item.selected {
+          background-color: #e3f2fd;
+          border-color: #2196f3;
+          box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+        }
+        .node-name {
+          min-width: 120px;
+          font-weight: 500;
+          margin-right: 15px;
+          color: #333;
+        }
+        .node-slider {
+          flex-grow: 1;
+          margin-left: 15px;
+        }
+        .node-checkbox {
+          margin-right: 15px;
+        }
+        .node-checkbox input[type='checkbox'] {
+          transform: scale(1.2);
+        }
+        /* Slider customization */
+        .node-slider .irs-bar {
+          background: linear-gradient(to right, #ff5722, #4caf50);
+        }
+        .node-slider .irs-handle {
+          width: 18px;
+          height: 18px;
+        }
+        /* Help button styling */
+        .help-btn {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          z-index: 1000;
+          background-color: #2196F3;
+          color: white;
+          border: none;
+          border-radius: 50%;
+          width: 30px;
+          height: 30px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: bold;
+        }
+        .help-btn:hover {
+          background-color: #1976D2;
+        }
+        .tab-content {
+          position: relative;
+        }
       
       ")),
+      
+      # JavaScript for interactive node selection
+      tags$script(HTML("
+        $(document).ready(function() {
+          // Function to update node item styling and counter
+          function updateNodeItemStyling() {
+            var selectedCount = 0;
+            $('[id^=\"affected_\"]').each(function() {
+              var checkbox = $(this);
+              var nodeItem = checkbox.closest('.affected-node-item');
+              if (checkbox.is(':checked')) {
+                nodeItem.addClass('selected');
+                selectedCount++;
+              } else {
+                nodeItem.removeClass('selected');
+              }
+            });
+            
+            // Update counter
+            var counterText = selectedCount === 0 ? 'No nodes selected' : 
+                             selectedCount === 1 ? '1 node selected' : 
+                             selectedCount + ' nodes selected';
+            $('#selectedNodesCount').text(counterText);
+            
+            // Change color based on selection
+            if (selectedCount === 0) {
+              $('#selectedNodesCount').css('color', '#f44336');
+            } else {
+              $('#selectedNodesCount').css('color', '#4caf50');
+            }
+          }
+          
+          // Update styling when checkboxes change
+          $(document).on('change', '[id^=\"affected_\"]', function() {
+            updateNodeItemStyling();
+          });
+          
+          // Initial styling update (with delay for Shiny rendering)
+          setTimeout(updateNodeItemStyling, 1500);
+          
+          // Re-run when new nodes are loaded
+          $(document).on('DOMNodeInserted', '#affectedNodesContainer', function() {
+            setTimeout(updateNodeItemStyling, 500);
+          });
+        });
+      ")),
+      
        # Make img directory accessible to Shiny
       tags$link(rel = "stylesheet", type = "text/css", href = "img/")
+    ),
+    
+    # PCA Help Modal
+    div(id = "pcaHelpModal", class = "modal fade", tabindex = "-1", role = "dialog",
+        div(class = "modal-dialog modal-lg", role = "document",
+            div(class = "modal-content",
+                div(class = "modal-header",
+                    h4(class = "modal-title", "PCA Phase Space Analysis - Help"),
+                    tags$button(type = "button", class = "close", `data-dismiss` = "modal", 
+                           HTML("&times;"))
+                ),
+                div(class = "modal-body",
+                    h5("How to Read the Plot:"),
+                    tags$ul(
+                      tags$li(strong("Axes:"), " The X and Y axes represent the first two principal components, which capture the most important patterns of variation in your system."),
+                      tags$li(strong("Trajectory:"), " The colored line shows how your system moves through different states over time, with colors typically representing time progression."),
+                      tags$li(strong("Loops and Patterns:"), " Circular or repeating patterns suggest cyclical behavior, while linear trajectories indicate directional change."),
+                      tags$li(strong("Density:"), " Areas where the trajectory spends more time indicate more stable or persistent system states.")
+                    ),
+                    
+                    h5("Interpreting Results:"),
+                    tags$ul(
+                      tags$li(strong("Stable Systems:"), " Show tight, consistent patterns or small loops around equilibrium points."),
+                      tags$li(strong("Unstable Systems:"), " Display erratic, widely-scattered trajectories with no clear pattern."),
+                      tags$li(strong("Transition States:"), " Sharp changes in direction may indicate system shifts or tipping points."),
+                      tags$li(strong("Resilience:"), " Systems that return to similar areas after disturbance show resilience.")
+                    ),
+                    
+                    h5("Tips for Analysis:"),
+                    tags$ul(
+                      tags$li("Compare trajectories before and after interventions to assess effectiveness."),
+                      tags$li("Look for changes in trajectory patterns that might indicate improved stability."),
+                      tags$li("Consider the scale - larger movements indicate more significant system changes."),
+                      tags$li("Use this alongside other analyses for a complete picture of system behavior.")
+                    )
+                ),
+                div(class = "modal-footer",
+                    tags$button(type = "button", class = "btn btn-primary", `data-dismiss` = "modal", "Close")
+                )
+            )
+        )
     ),
     
     tabItems(
@@ -290,7 +447,10 @@ title = tags$img(
                 tabPanel("Time Series", 
                         withSpinner(plotlyOutput("timeSeriesPlot", height = "400px"))),
                 tabPanel("Phase Space (PCA)", 
-                        withSpinner(plotlyOutput("pcaPlot", height = "400px"))),
+                        div(class = "tab-content",
+                            actionButton("pcaHelpBtn", "?", class = "help-btn", 
+                                       title = "Click for PCA explanation"),
+                            withSpinner(plotlyOutput("pcaPlot", height = "400px")))),
                 tabPanel("Participation Ratio", 
                         withSpinner(plotlyOutput("participationPlot", height = "400px")))
               )
@@ -333,14 +493,25 @@ title = tags$img(
               textInput("measureName", "Intervention Name:", 
                        value = "New Intervention", placeholder = "e.g., Tourism Throttling"),
               
-              selectInput("affectedNode", "Affected Node:",
-                         choices = NULL, selected = NULL),
+              h4("Affected Nodes"),
+              p("Select nodes that will be directly affected by this intervention. Use the sliders to set individual effect ranges for each selected node."),
+              helpText("✓ Check the box to select a node, then adjust its individual effect range with the slider."),
+              fluidRow(
+                column(6, div(id = "selectedNodesCount", style = "margin-bottom: 5px; font-weight: bold; color: #2196F3;")),
+                column(6, div(style = "text-align: right; margin-bottom: 5px;",
+                             actionButton("selectAllNodes", "Select All", class = "btn-xs btn-primary", style = "margin-right: 5px;"),
+                             actionButton("clearAllNodes", "Clear All", class = "btn-xs btn-secondary")))
+              ),
+              div(id = "affectedNodesContainer",
+                  style = "max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 5px;",
+                  uiOutput("affectedNodesUI")),
               
               checkboxGroupInput("indicatorNodes", "Indicator Nodes:",
                                choices = NULL, selected = NULL),
               
-              h4("Effect Ranges"),
-              sliderInput("effectRange", "Effect Range:", 
+              h4("Global Effect Range"),
+              p("Default effect range (can be customized per node above):"),
+              sliderInput("globalEffectRange", "Global Effect Range:", 
                          min = -1, max = 1, value = c(-1, 0), step = 0.1),
               
               br(),
@@ -356,6 +527,12 @@ title = tags$img(
             conditionalPanel(
               condition = "output.measureAdded",
               h4("Network with Intervention"),
+              div(style = "margin-bottom: 10px;",
+                  tags$span("Legend: ", style = "font-weight: bold;"),
+                  tags$span("🔴 Intervention Node", style = "color: #E74C3C; margin-right: 15px;"),
+                  tags$span("🟠 Affected Nodes", style = "color: #FF9800; margin-right: 15px;"),
+                  tags$span("🔵 Other Nodes", style = "color: #2196F3;")
+              ),
               withSpinner(visNetworkOutput("measureNetworkVis", height = "400px"))
             ),
             conditionalPanel(
@@ -462,6 +639,42 @@ server <- function(input, output, session) {
     values$analysis_log <- c(values$analysis_log, paste(timestamp, "-", message))
   }
   
+  # PCA Help Modal Handler
+  observeEvent(input$pcaHelpBtn, {
+    showModal(modalDialog(
+      title = "PCA Phase Space Analysis - Help",
+      size = "l",
+      easyClose = TRUE,
+      footer = modalButton("Close"),
+      
+      div(
+        h5("How to Read the Plot:"),
+        tags$ul(
+          tags$li(strong("Axes:"), " The X and Y axes represent the first two principal components, which capture the most important patterns of variation in your system."),
+          tags$li(strong("Trajectory:"), " The colored line shows how your system moves through different states over time, with colors typically representing time progression."),
+          tags$li(strong("Loops and Patterns:"), " Circular or repeating patterns suggest cyclical behavior, while linear trajectories indicate directional change."),
+          tags$li(strong("Density:"), " Areas where the trajectory spends more time indicate more stable or persistent system states.")
+        ),
+        
+        h5("Interpreting Results:"),
+        tags$ul(
+          tags$li(strong("Stable Systems:"), " Show tight, consistent patterns or small loops around equilibrium points."),
+          tags$li(strong("Unstable Systems:"), " Display erratic, widely-scattered trajectories with no clear pattern."),
+          tags$li(strong("Transition States:"), " Sharp changes in direction may indicate system shifts or tipping points."),
+          tags$li(strong("Resilience:"), " Systems that return to similar areas after disturbance show resilience.")
+        ),
+        
+        h5("Tips for Analysis:"),
+        tags$ul(
+          tags$li("Compare trajectories before and after interventions to assess effectiveness."),
+          tags$li("Look for changes in trajectory patterns that might indicate improved stability."),
+          tags$li("Consider the scale - larger movements indicate more significant system changes."),
+          tags$li("Use this alongside other analyses for a complete picture of system behavior.")
+        )
+      )
+    ))
+  })
+  
   # File upload handling
   output$fileUploaded <- reactive({
     return(!is.null(input$file))
@@ -502,9 +715,9 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       sample_data <- data.frame(
-        from = c("Tourism", "Economy", "Environment", "Tourism", "Economy"),
-        to = c("Economy", "Environment", "Tourism", "Environment", "Tourism"),
-        strength = c("Strong Positive", "Medium Negative", "Strong Negative", "Medium Positive", "Strong Positive")
+        from = c("Tourism", "Economy", "Environment", "Tourism", "Economy", "Environment"),
+        to = c("Economy", "Environment", "Tourism", "Environment", "Tourism", "Economy"),
+        strength = c("Strong Positive", "Medium Negative", "Strong Negative", "Medium Positive", "Strong Positive", "Weak Positive")
       )
       write.csv(sample_data, file, row.names = FALSE)
     }
@@ -600,7 +813,24 @@ server <- function(input, output, session) {
         node_names <- rownames(values$ses_matrix)
         updateCheckboxGroupInput(session, "targetVars", 
                                 choices = node_names, selected = node_names[1:min(3, length(node_names))])
-        updateSelectInput(session, "affectedNode", choices = node_names)
+        
+        # Create dynamic affected nodes UI
+        output$affectedNodesUI <- renderUI({
+          lapply(node_names, function(node) {
+            node_id <- paste0("affected_", gsub("[^A-Za-z0-9]", "_", node))
+            slider_id <- paste0("slider_", gsub("[^A-Za-z0-9]", "_", node))
+            
+            div(class = "affected-node-item",
+                div(class = "node-checkbox",
+                    checkboxInput(node_id, "", value = FALSE)),
+                div(class = "node-name", node),
+                div(class = "node-slider",
+                    sliderInput(slider_id, NULL, min = -1, max = 1, 
+                               value = c(-1, 0), step = 0.1, width = "100%"))
+            )
+          })
+        })
+        
         updateCheckboxGroupInput(session, "indicatorNodes", choices = node_names)
         
         log_message("Data processed successfully")
@@ -632,8 +862,8 @@ server <- function(input, output, session) {
       )
       
       edges <- data.frame(
-        from = get.edgelist(g)[,1],
-        to = get.edgelist(g)[,2],
+        from = as_edgelist(g)[,1],
+        to = as_edgelist(g)[,2],
         width = abs(E(g)$weight) * input$edgeWidth,
         color = ifelse(E(g)$weight > 0, "#2B7CE9", "#E74C3C"),
         arrows = "to"
@@ -915,22 +1145,85 @@ server <- function(input, output, session) {
     }
   })
   
+  # Select All Nodes button
+  observeEvent(input$selectAllNodes, {
+    req(values$ses_matrix)
+    
+    node_names <- rownames(values$ses_matrix)
+    for (node in node_names) {
+      node_id <- paste0("affected_", gsub("[^A-Za-z0-9]", "_", node))
+      updateCheckboxInput(session, node_id, value = TRUE)
+    }
+  })
+  
+  # Clear All Nodes button
+  observeEvent(input$clearAllNodes, {
+    req(values$ses_matrix)
+    
+    node_names <- rownames(values$ses_matrix)
+    for (node in node_names) {
+      node_id <- paste0("affected_", gsub("[^A-Za-z0-9]", "_", node))
+      updateCheckboxInput(session, node_id, value = FALSE)
+    }
+  })
+
   # Measures
   observeEvent(input$addMeasure, {
-    req(values$ses_matrix, input$measureName, input$affectedNode, input$indicatorNodes)
+    req(values$ses_matrix, input$measureName, input$indicatorNodes)
     
     tryCatch({
+      # Get all node names
+      node_names <- rownames(values$ses_matrix)
+      
+      # Collect selected affected nodes and their effect ranges
+      affected_nodes <- c()
+      node_effects <- c()
+      
+      for (node in node_names) {
+        node_id <- paste0("affected_", gsub("[^A-Za-z0-9]", "_", node))
+        slider_id <- paste0("slider_", gsub("[^A-Za-z0-9]", "_", node))
+        
+        # Check if this node is selected
+        if (!is.null(input[[node_id]]) && input[[node_id]]) {
+          affected_nodes <- c(affected_nodes, node)
+          
+          # Get the effect range for this node
+          if (!is.null(input[[slider_id]])) {
+            # Use the specific slider range for this node
+            effect_range <- mean(input[[slider_id]])
+          } else {
+            # Fallback to global range
+            effect_range <- mean(input$globalEffectRange)
+          }
+          node_effects <- c(node_effects, effect_range)
+        }
+      }
+      
+      # Ensure at least one node is selected
+      if (length(affected_nodes) == 0) {
+        showNotification("Please select at least one affected node.", type = "warning")
+        return()
+      }
+      
+      # Use global effect range as bounds for the simulation
+      lower_bound <- input$globalEffectRange[1]
+      upper_bound <- input$globalEffectRange[2]
+      
       values$measure_matrix <- simulate.measure(
         mat = values$ses_matrix,
         measure = input$measureName,
-        affected = input$affectedNode,
+        affected = affected_nodes,
         indicators = input$indicatorNodes,
-        lower = input$effectRange[1],
-        upper = input$effectRange[2]
+        lower = lower_bound,
+        upper = upper_bound
       )
       
-      log_message(paste("Intervention added:", input$measureName))
-      showNotification("Intervention added successfully!", type = "message")
+      # Store affected nodes info for visualization
+      values$current_affected_nodes <- affected_nodes
+      values$current_node_effects <- node_effects
+      
+      log_message(paste("Intervention added:", input$measureName, "- Affected nodes:", paste(affected_nodes, collapse = ", ")))
+      showNotification(paste("Intervention added successfully! Affected nodes:", paste(affected_nodes, collapse = ", ")), type = "message")
       
     }, error = function(e) {
       showNotification(paste("Error adding intervention:", e$message), type = "error")
@@ -944,20 +1237,49 @@ server <- function(input, output, session) {
     tryCatch({
       g <- graph_from_adjacency_matrix(values$measure_matrix, mode = "directed", weighted = TRUE)
       intervention_node <- input$measureName
+      affected_nodes <- values$current_affected_nodes %||% c()
+      
+      # Create color and size vectors for nodes
+      node_colors <- sapply(V(g)$name, function(node) {
+        if (node == intervention_node) {
+          list(background = "#E74C3C", border = "#C0392B")  # Red for intervention node
+        } else if (node %in% affected_nodes) {
+          list(background = "#FF9800", border = "#F57C00")  # Orange for affected nodes
+        } else {
+          list(background = "#97C2FC", border = "#2B7CE9")  # Blue for other nodes
+        }
+      })
+      
+      node_sizes <- sapply(V(g)$name, function(node) {
+        if (node == intervention_node) {
+          40  # Largest for intervention
+        } else if (node %in% affected_nodes) {
+          32  # Medium for affected nodes
+        } else {
+          25  # Standard for other nodes
+        }
+      })
       
       nodes <- data.frame(
         id = V(g)$name,
         label = V(g)$name,
-        size = ifelse(V(g)$name == intervention_node, 35, 25),
-        color = list(
-          background = ifelse(V(g)$name == intervention_node, "#E74C3C", "#97C2FC"),
-          border = ifelse(V(g)$name == intervention_node, "#C0392B", "#2B7CE9")
-        )
+        size = node_sizes,
+        color.background = sapply(node_colors, function(x) x$background),
+        color.border = sapply(node_colors, function(x) x$border),
+        title = sapply(V(g)$name, function(node) {
+          if (node == intervention_node) {
+            "Intervention Node"
+          } else if (node %in% affected_nodes) {
+            "Affected Node"
+          } else {
+            "Network Node"
+          }
+        })
       )
       
       edges <- data.frame(
-        from = get.edgelist(g)[,1],
-        to = get.edgelist(g)[,2],
+        from = as_edgelist(g)[,1],
+        to = as_edgelist(g)[,2],
         width = abs(E(g)$weight) * 5,
         color = ifelse(E(g)$weight > 0, "#2B7CE9", "#E74C3C"),
         arrows = "to"

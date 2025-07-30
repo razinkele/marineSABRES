@@ -1,0 +1,13 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run marineSABRES Shiny App",
+			"type": "shell",
+			"command": "Rscript -e \"setwd('GUI'); source('app.r')\"",
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}

@@ -57,13 +57,18 @@ data.load <- function(df, folder, graph = FALSE, graph.name = NULL, graph.title 
   
   # Process strength values
   df$weight <- 1  # Default weight for "Strong Positive"
+  df$weight[df$strength == "Strong Positive"] <- 1
   df$weight[df$strength == "Medium Positive"] <- 0.5
+  df$weight[df$strength == "Weak Positive" | df$strength == "Weak positive"] <- 0.25
   df$weight[df$strength == "Medium Negative"] <- -0.5
   df$weight[df$strength == "Strong Negative"] <- -1
-  df$weight[df$strength == "Strong Positive"] <- 1  # Explicit for clarity
+  df$weight[df$strength == "Weak Negative" | df$strength == "Weak negative"] <- -0.25
   
   # Handle any unrecognized strength values
-  unknown_strengths <- unique(df$strength[!df$strength %in% c("Strong Positive", "Medium Positive", "Medium Negative", "Strong Negative")])
+  recognized_strengths <- c("Strong Positive", "Strong positive", "Medium Positive", "Medium positive", 
+                           "Weak Positive", "Weak positive", "Medium Negative", "Medium negative",
+                           "Strong Negative", "Strong negative", "Weak Negative", "Weak negative")
+  unknown_strengths <- unique(df$strength[!df$strength %in% recognized_strengths])
   if (length(unknown_strengths) > 0) {
     warning(paste("Unknown strength values found:", paste(unknown_strengths, collapse = ", "), "- assigned weight 1"))
   }
