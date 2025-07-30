@@ -1,0 +1,52 @@
+﻿from,to,type,label,connection type,strength
+Residents,Aquatic Sports,+,+,causal loop,Medium Positive
+Aquatic Sports,Coastal litter,+,+,causal loop,Weak Positive
+MPA recreational diving,Coastal litter,+,+,causal loop,Weak Positive
+MPA biodiversity,Education,+,+,causal loop,Weak positive 
+NATURA reserves,Education,+,+,causal loop,Medium Positive
+Pristine Areas,Education,+,+,causal loop,Medium Positive
+Aquatic Sports,Fishing Pressure,-,-,causal loop,Weak Negative
+MPA recreational diving,Fishing Pressure,-,-,causal loop,Weak Negative
+MPA biodiversity,Food Provision,+,+,causal loop,Weak positive 
+NATURA reserves,Food Provision,+,+,causal loop,Medium Positive
+Pristine Areas,Food Provision,+,+,causal loop,Medium Positive
+MPA biodiversity,Marine Tourism Companies,+,+,causal loop,Weak positive 
+NATURA reserves,Marine Tourism Companies,+,+,causal loop,Weak positive 
+Pristine Areas,Marine Tourism Companies,+,+,causal loop,Medium Positive
+MPA food web dynamics,MPA biodiversity,+,+,causal loop,Strong positive
+Productivity,MPA biodiversity,+,+,causal loop,Strong positive
+Top predators,MPA biodiversity,+,+,causal loop,Strong positive
+Coastal litter,MPA food web dynamics,-,-,causal loop,Medium Negative
+Fishing Pressure,MPA food web dynamics,-,-,causal loop,Medium Negative
+Non-native species,MPA food web dynamics,-,-,causal loop,Medium Negative
+Touristic Pressure,MPA food web dynamics,-,-,causal loop,Weak Negative
+Residents,MPA recreational diving,+,+,causal loop,Medium Positive
+MPA food web dynamics,NATURA reserves,+,+,causal loop,Medium Positive
+Productivity,NATURA reserves,+,+,causal loop,Weak Positive
+Top predators,NATURA reserves,+,+,causal loop,Strong positive
+MPA biodiversity,Natural seascapes,+,+,causal loop,Strong positive
+NATURA reserves,Natural seascapes,+,+,causal loop,Strong positive
+Pristine Areas,Natural seascapes,+,+,causal loop,Medium Positive
+Aquatic Sports,Non-native species,+,+,causal loop,Medium Positive
+MPA recreational diving,Non-native species,+,+,causal loop,Medium Positive
+MPA food web dynamics,Pristine Areas,+,+,causal loop,Medium Positive
+Productivity,Pristine Areas,+,+,causal loop,Weak Positive
+Top predators,Pristine Areas,+,+,causal loop,Medium Positive
+Coastal litter,Productivity,-,-,causal loop,Medium Negative
+Fishing Pressure,Productivity,-,-,causal loop,Medium Negative
+Non-native species,Productivity,-,-,causal loop,Weak Negative
+Touristic Pressure,Productivity,-,-,causal loop,Weak Negative
+MPA biodiversity,Research,+,+,causal loop,Medium Positive
+NATURA reserves,Research,+,+,causal loop,Medium Positive
+Pristine Areas,Research,+,+,causal loop,Medium Positive
+Education,Residents,+,+,causal loop,Weak Positive
+Food Provision,Residents,+,+,causal loop,Medium Positive
+Marine Tourism Companies,Residents,+,+,causal loop,Medium Positive
+Natural seascapes,Residents,+,+,causal loop,Weak Positive
+Research,Residents,+,+,causal loop,Weak Positive
+Coastal litter,Top predators,-,-,causal loop,Medium Negative
+Fishing Pressure,Top predators,-,-,causal loop,Medium Negative
+Non-native species,Top predators,-,-,causal loop,Medium Negative
+Touristic Pressure,Top predators,-,-,causal loop,Weak Negative
+Aquatic Sports,Touristic Pressure,+,+,causal loop,Weak Positive
+MPA recreational diving,Touristic Pressure,+,+,causal loop,Strong positive
